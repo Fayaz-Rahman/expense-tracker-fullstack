@@ -1,0 +1,39 @@
+# =========================
+# IDE / IntelliJ
+# =========================
+
+.idea/
+*.iml
+
+
+# =========================
+# Java / Spring Boot
+# =========================
+
+backend/target/
+*.log
+
+
+# =========================
+# Node / React
+# =========================
+
+frontend/node_modules/
+frontend/dist/
+
+
+# =========================
+# Environment / secrets
+# =========================
+
+.env
+.env.*
+!.env.example
+
+
+# =========================
+# OS generated files
+# =========================
+
+.DS_Store
+Thumbs.db
