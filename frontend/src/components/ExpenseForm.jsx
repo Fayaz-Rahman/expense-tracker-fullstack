@@ -23,15 +23,14 @@ function ExpenseForm({ onExpenseAdded }) {
 
         async function loadCategories() {
 
+            if (!token) return;
+
             try {
 
-                const data =
-                    await getCategories(token);
+                const data = await getCategories(token);
 
                 setCategories(
-                    Array.isArray(data)
-                        ? data
-                        : []
+                    Array.isArray(data) ? data : []
                 );
 
             } catch (error) {
@@ -47,7 +46,6 @@ function ExpenseForm({ onExpenseAdded }) {
 
     }, [token]);
 
-
     async function handleSubmit(event) {
 
         event.preventDefault();
@@ -55,45 +53,41 @@ function ExpenseForm({ onExpenseAdded }) {
         setError("");
         setSuccess("");
 
+        if (!title.trim() || !amount) {
 
-        if (!title || !amount) {
-
-            setError(
-                "Title and amount are required."
-            );
-
+            setError("Title and amount are required.");
             return;
         }
-
 
         try {
 
             const expense = {
-                title: title,
+                title: title.trim(),
                 amount: Number(amount),
-                category: category || null,
+                category: category.trim() || null,
                 expenseDate: expenseDate || null
             };
 
+            await createExpense(token, expense);
 
-            await createExpense(
-                token,
-                expense
-            );
-
-
-            onExpenseAdded();
-
-
-            setSuccess(
-                "Expense added successfully."
-            );
-
+            setSuccess("Expense added successfully.");
 
             setTitle("");
             setAmount("");
             setCategory("");
             setExpenseDate("");
+
+            // Refresh categories so the newly created category
+            // appears in future suggestions.
+            const updatedCategories = await getCategories(token);
+
+            setCategories(
+                Array.isArray(updatedCategories)
+                    ? updatedCategories
+                    : []
+            );
+
+            onExpenseAdded();
 
         } catch (error) {
 
@@ -101,8 +95,8 @@ function ExpenseForm({ onExpenseAdded }) {
         }
     }
 
-
     return (
+
         <section className="expense-form-card">
 
             <div className="section-heading">
@@ -125,7 +119,6 @@ function ExpenseForm({ onExpenseAdded }) {
                 </div>
 
             </div>
-
 
             <form
                 className="expense-form"
@@ -151,7 +144,6 @@ function ExpenseForm({ onExpenseAdded }) {
 
                 </div>
 
-
                 <div className="expense-form-row">
 
                     <div className="form-group">
@@ -162,9 +154,7 @@ function ExpenseForm({ onExpenseAdded }) {
 
                         <div className="currency-input">
 
-                            <span>
-                                ₹
-                            </span>
+                            <span>₹</span>
 
                             <input
                                 id="expense-amount"
@@ -172,9 +162,7 @@ function ExpenseForm({ onExpenseAdded }) {
                                 placeholder="0.00"
                                 value={amount}
                                 onChange={event =>
-                                    setAmount(
-                                        event.target.value
-                                    )
+                                    setAmount(event.target.value)
                                 }
                                 min="0.01"
                                 step="0.01"
@@ -185,48 +173,40 @@ function ExpenseForm({ onExpenseAdded }) {
 
                     </div>
 
-
                     <div className="form-group">
 
                         <label htmlFor="expense-category">
                             Category
                         </label>
 
-                        <select
+                        <input
                             id="expense-category"
+                            type="text"
+                            list="category-options"
+                            placeholder="Type or select a category"
                             value={category}
                             onChange={event =>
-                                setCategory(
-                                    event.target.value
-                                )
+                                setCategory(event.target.value)
                             }
-                        >
+                            maxLength={100}
+                        />
 
-                            <option value="">
-                                No category
-                            </option>
+                        <datalist id="category-options">
 
-                            {categories.map(
-                                currentCategory => (
+                            {categories.map(currentCategory => (
 
-                                    <option
-                                        key={currentCategory.id}
-                                        value={
-                                            currentCategory.name
-                                        }
-                                    >
-                                        {currentCategory.name}
-                                    </option>
+                                <option
+                                    key={currentCategory.id}
+                                    value={currentCategory.name}
+                                />
 
-                                )
-                            )}
+                            ))}
 
-                        </select>
+                        </datalist>
 
                     </div>
 
                 </div>
-
 
                 <div className="form-group">
 
@@ -239,28 +219,27 @@ function ExpenseForm({ onExpenseAdded }) {
                         type="date"
                         value={expenseDate}
                         onChange={event =>
-                            setExpenseDate(
-                                event.target.value
-                            )
+                            setExpenseDate(event.target.value)
                         }
                     />
 
                 </div>
 
-
                 {success && (
+
                     <div className="form-message success">
                         {success}
                     </div>
+
                 )}
 
-
                 {error && (
+
                     <div className="form-message error">
                         {error}
                     </div>
-                )}
 
+                )}
 
                 <div className="form-actions">
 

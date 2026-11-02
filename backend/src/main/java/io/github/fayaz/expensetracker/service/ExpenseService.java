@@ -9,6 +9,8 @@ import io.github.fayaz.expensetracker.repository.UserRepository;
 import io.github.fayaz.expensetracker.specification.ExpenseSpecification;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import io.github.fayaz.expensetracker.model.Category;
+import io.github.fayaz.expensetracker.repository.CategoryRepository;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -18,13 +20,15 @@ public class ExpenseService {
 
     private final ExpenseRepository expenseRepository;
     private final UserRepository userRepository;
-
+    private final CategoryRepository categoryRepository;
     public ExpenseService(
             ExpenseRepository expenseRepository,
-            UserRepository userRepository
+            UserRepository userRepository,
+            CategoryRepository categoryRepository
     ) {
         this.expenseRepository = expenseRepository;
         this.userRepository = userRepository;
+        this.categoryRepository = categoryRepository;
     }
 
 
@@ -110,18 +114,42 @@ public class ExpenseService {
             Expense expense
     ) {
 
-        // Find logged-in user
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() ->
-                        new UserNotFoundException(
-                                "User not found"
-                        )
+                        new UserNotFoundException("User not found")
                 );
 
-
-        // Never trust user ID from client
         expense.setUser(user);
 
+        String categoryName = expense.getCategory();
+
+        if (categoryName != null && !categoryName.isBlank()) {
+
+            categoryName = categoryName.trim();
+
+            if (categoryName.length() > 100) {
+                throw new IllegalArgumentException(
+                        "Category name must not exceed 100 characters"
+                );
+            }
+
+            if (!categoryRepository.existsByUserEmailAndNameIgnoreCase(
+                    email,
+                    categoryName
+            )) {
+
+                Category category = new Category();
+                category.setName(categoryName);
+                category.setUser(user);
+
+                categoryRepository.save(category);
+            }
+
+            expense.setCategory(categoryName);
+
+        } else {
+            expense.setCategory(null);
+        }
 
         return expenseRepository.save(expense);
     }

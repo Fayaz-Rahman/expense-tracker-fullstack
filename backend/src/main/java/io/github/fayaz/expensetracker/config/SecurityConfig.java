@@ -2,6 +2,7 @@ package io.github.fayaz.expensetracker.config;
 
 import io.github.fayaz.expensetracker.security.JwtAuthenticationFilter;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -11,7 +12,6 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.http.SessionCreationPolicy;
 
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -29,6 +29,8 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    @Value("${app.frontend.url:http://localhost:5173}")
+    private String frontendUrl;
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
@@ -51,7 +53,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowedOrigins(
-                List.of("http://localhost:5173")
+                List.of(frontendUrl)
         );
 
         configuration.setAllowedMethods(
@@ -61,6 +63,8 @@ public class SecurityConfig {
         configuration.setAllowedHeaders(
                 List.of("*")
         );
+
+        configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
