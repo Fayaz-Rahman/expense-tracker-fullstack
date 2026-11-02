@@ -1,13 +1,14 @@
+
 import { useState } from "react";
 
 import { updateExpense } from "../services/expenseApi";
 import useAuth from "../context/useAuth";
 
 function EditExpense({
-    expense,
-    onExpenseUpdated,
-    onCancel
-}) {
+                         expense,
+                         onExpenseUpdated,
+                         onCancel
+                     }) {
 
     const { token } = useAuth();
 
@@ -18,13 +19,12 @@ function EditExpense({
         useState(expense.amount);
 
     const [category, setCategory] =
-        useState(expense.category);
+        useState(expense.category || "");
 
     const [expenseDate, setExpenseDate] =
-        useState(expense.expenseDate);
+        useState(expense.expenseDate || "");
 
     const [error, setError] = useState("");
-
 
     async function handleSubmit(event) {
 
@@ -35,10 +35,10 @@ function EditExpense({
         try {
 
             const updatedExpense = {
-                title: title,
+                title: title.trim(),
                 amount: Number(amount),
-                category: category,
-                expenseDate: expenseDate
+                category: category.trim() || null,
+                expenseDate: expenseDate || null
             };
 
             await updateExpense(
@@ -54,7 +54,6 @@ function EditExpense({
             setError(error.message);
         }
     }
-
 
     return (
         <div className="edit-expense-panel">
@@ -74,7 +73,6 @@ function EditExpense({
                 </div>
 
             </div>
-
 
             <form
                 className="expense-form"
@@ -99,7 +97,6 @@ function EditExpense({
 
                 </div>
 
-
                 <div className="expense-form-row">
 
                     <div className="form-group">
@@ -110,9 +107,7 @@ function EditExpense({
 
                         <div className="currency-input">
 
-                            <span>
-                                ₹
-                            </span>
+                            <span>₹</span>
 
                             <input
                                 id={`edit-amount-${expense.id}`}
@@ -130,7 +125,6 @@ function EditExpense({
 
                     </div>
 
-
                     <div className="form-group">
 
                         <label htmlFor={`edit-category-${expense.id}`}>
@@ -144,13 +138,11 @@ function EditExpense({
                             onChange={event =>
                                 setCategory(event.target.value)
                             }
-                            required
                         />
 
                     </div>
 
                 </div>
-
 
                 <div className="form-group">
 
@@ -165,18 +157,15 @@ function EditExpense({
                         onChange={event =>
                             setExpenseDate(event.target.value)
                         }
-                        required
                     />
 
                 </div>
-
 
                 {error && (
                     <div className="form-message error">
                         {error}
                     </div>
                 )}
-
 
                 <div className="form-actions">
 
